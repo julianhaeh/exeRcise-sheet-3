@@ -94,7 +94,20 @@ a)  Load the `pixar_films` dataset into R. Clean the dataset by removing
     the possible values and what do they mean? Create a factor variable
     for the film rating. Why is this appropriate?
 
-<!-- -->
+```{r}
+library(tidyverse)
+pixar_films <- read_csv("https://raw.githubusercontent.com/rfordatascience/tidytuesday/main/data/2025/2025-03-11/pixar_films.csv")
+
+pixar_films <- pixar_films %>%
+  filter(!is.na(film))
+
+pixar_films <- pixar_films %>%
+  mutate(film_rating = as.factor(film_rating))
+
+```
+
+The possible values of film_rating are G, PG, PG-13, R, NC-17 and NA, although in the dataset only G, PG and NA can be observed. This variable records each film’s official Motion Picture Association (MPA) rating—a categorical label that indicates the intended audience and content suitability. In other words, it tells you how the MPA classifies the film based on factors like language, violence, sexual content, and thematic elements. A factor variable is fitting for this variable, since it is not continous and has a finite amount of possible values.
+
 
 b)  Inspect the film titles manually. Which films form a film series? A
     film series can be identified by a common word in the titles of the
