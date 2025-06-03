@@ -1,7 +1,7 @@
 ---
-title: "Exercise #X"
+title: "Exercise 3"
 subtitle: "Fortgeschrittene Statistische Software für NF"
-author: "Name (Martrikelnummer), Name (Martrikelnummer), ..."
+author: "Julian Hähle (12740671)"
 date: "`r Sys.Date()`"
 output: distill::distill_article
 ---
@@ -106,7 +106,7 @@ pixar_films <- pixar_films %>%
 
 ```
 
-The possible values of film_rating are G, PG, PG-13, R, NC-17 and NA, although in the dataset only G, PG and NA can be observed. This variable records each film’s official Motion Picture Association (MPA) rating—a categorical label that indicates the intended audience and content suitability. In other words, it tells you how the MPA classifies the film based on factors like language, violence, sexual content, and thematic elements. A factor variable is fitting for this variable, since it is not continous and has a finite amount of possible values.
+The possible values of film_rating are G, PG, PG-13, R, NC-17 and NA, although in the cleaned dataset only G, PG and NA can be observed. This variable records each film’s official Motion Picture Association (MPA) rating—a categorical label that indicates the intended audience and content suitability. In other words, it tells you how the MPA classifies the film based on factors like language, violence, sexual content, and thematic elements. A factor variable is fitting for this variable, since it is not continous and has a finite amount of possible values.
 
 
 b)  Inspect the film titles manually. Which films form a film series? A
@@ -117,38 +117,49 @@ b)  Inspect the film titles manually. Which films form a film series? A
     and how many films belong to the series. Output the dataframe.
     
 ```{r}
-detect_series <- function(
-    name, dataFrom, dataTo
-) 
-{ 
-  count <- 0
-  for (value in dataFrom$film){
-    if(str_detect(value, name)){
-      count <- count + 1
+keywords <- c("Toy Story", "Cars", "Monsters", "Finding", "Incredibles")
+
+get_series <- function(title, keywords) {
+  for (k in keywords) {
+    if (str_detect(title, fixed(k))) {
+      return(k)
     }
   }
-  
-  new_row <- data.frame(
-    Series = name,
-    Count  = count,
-    stringsAsFactors = FALSE
-  )
-  
-  dataTo <- bind_rows(dataTo, new_row)
-  
-  return(dataTo)
-
+  return(NA_character_)
 }
 
-series_data <- data.frame(Series = character(), Count = integer())
-series_data <- detect_series("Toy Story", pixar_films, series_data)
-series_data <- detect_series("Cars", pixar_films, series_data)
-series_data <- detect_series("Monsters", pixar_films, series_data)
-series_data <- detect_series("Incredibles", pixar_films, series_data)
-series_data <- detect_series("Finding", pixar_films, series_data)
+ 
+pixar_films <- pixar_films %>%
+  rowwise() %>%
+  mutate(series = get_series(film, keywords)) %>%
+  ungroup()
+
+series_data <- pixar_films %>%
+  filter(!is.na(series)) %>%
+  group_by(series) %>%
+  summarise(
+    films = paste(film, collapse = ", "),
+    count = n()
+  )
 
 knitr::kable(series_data)
 ```
+These titles form a series:
+
+Toy Story series:
+Toy Story (1995), Toy Story 2 (1999), Toy Story 3 (2010), Toy Story 4 (2019)
+
+Cars series:
+Cars (2006), Cars 2 (2011), Cars 3 (2017)
+
+Monsters series:
+Monsters, Inc. (2001), Monsters University (2013) — Prequel to Monsters, Inc.
+
+Finding series:
+Finding Nemo (2003), Finding Dory (2016)
+
+The Incredibles series:
+The Incredibles (2004), Incredibles 2 (2018)
 
 
 c)  Load the `public_response` dataframe into R. Convert the
@@ -184,6 +195,60 @@ d)  Choose one of the variables representing the public response and
 
     What do you notice when comparing the scores of the films in a
     series? Do you see any patterns?
+
+```{r}
+attach_series <- function(data, series_names) {
+  data <- data %>% 
+    mutate(series = NA_character_)
+  
+  for (i in seq_len(nrow(data))) {
+    title_i <- data$film[i]
+    
+    for (ser in series_names) {
+      if (str_detect(title_i, ser)) {
+        data$series[i] <- ser
+        break
+      }
+    }
+  }
+  
+  return(data)
+}
+
+series_names <- c("Toy Story", "Cars", "Monsters", "Finding", "Incredibles")
+combined_data <- attach_series(combined_data, series_names)
+  
+combined_data <- combined_data %>%
+  arrange(series, release_date) %>%
+  mutate(film = factor(film, levels = unique(film)))
+
+combined_data %>%
+  filter(!is.na(series)) %>%
+  ggplot(aes(x = series, y = rotten_tomatoes, group = film, fill = series)) + 
+  geom_bar(stat = "identity" ,aes(group=film), position = position_dodge(width = 0.8), width = 0.5) + 
+      scale_fill_manual(values = c("#1f77b4", "#ff7f0e", "#2ca02c", "#d62728", "#9467bd"), labels = c("Cars, Cars 2, Cars 3", "Finding Nemo, Finding Dory", "The Incredibles, Incredibles 2", "Monsters, Inc., Monster University", "Toy Story, Toy Story 2, Toy Story 3, Toystory 4")) +
+   labs(
+    title = "Rotten Tomatoes Scores for Pixar Film Series",
+    x = "Film Series",
+    y = "Rotten Tomatoes Score",
+    fill = "Films",
+    caption = "Bars corresponding to films are ordered from left to\nright in ascending release date order, corresponding to the order in the legend"
+  ) + 
+  theme(
+    plot.caption.position = "plot", 
+    plot.caption = element_text(
+      hjust = 0, 
+      vjust = -0.5, 
+      size  = 11, 
+      margin = margin(t = 10, r = 0, b = 0, l = 0)
+    )
+  )
+  
+
+
+```
+
+There is a trend when looking at the plot: For every series, the rotten tomatoe score decreases with each new film in that series. The exception for this trend is cars. Cars 3 performed better than Cars 2.
 
 ## Exercise 4: Open Analysis (4 points)
 
