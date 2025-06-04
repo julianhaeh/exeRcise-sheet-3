@@ -269,14 +269,18 @@ d)  Come up with a (research) question you want to answer with the data
     and briefly explain why you believe this is an interesting question
     within one sentence. It should be a question that can be answered
     with the dataset and using R.
-```{r}
-alcohol_data <- read.csv("data/Alcohol consumption since 1890 (Alexander & Holmes, 2017).csv")
-```
+
+How has per capita alcohol consumption in Germany evolved from 1890 to 2014 compared to the United-States, Japan, Italy and Australia?
+
+It is common knowledge that alcohol consumption is highly unhealthy for us, therefore it is important to reflect on the trend of our consumption. 
     
 e)  Use R to answer your chosen question. Please limit your analysis to
     the functions and techniques we have covered so far in the course.
     You are **not expected** to use advanced statistical models or
     external packages which haven't been introduced.
+    ```{r}
+alcohol_data <- read.csv("data/Alcohol consumption since 1890 (Alexander & Holmes, 2017).csv")
+```
 f)  Create a meaningful plot / figure with the dataset. Make sure to
     provide a figure caption (via the chunk options / Rmarkdown) and
     correctly label the figure.
