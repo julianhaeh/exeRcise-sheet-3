@@ -309,6 +309,25 @@ German per capita alcohol consumption changed very little from 1890 to 2014. It 
 f)  Create a meaningful plot / figure with the dataset. Make sure to
     provide a figure caption (via the chunk options / Rmarkdown) and
     correctly label the figure.
+    
+```{r, fig.cap="A Boxplot of alcohol consumption in high-income countries in 2014"}
+alc_plot_data <- alcohol_data %>%
+  filter(Year == 2014) %>%
+  rename(alcohol_consumption = Alcohol.consumption.since.1890..Alexander...Holmes..2017.)
+
+alc_plot_data %>%
+  ggplot(aes(x = alcohol_consumption, y = "")) + 
+  geom_boxplot(outlier.shape = NA) +
+  geom_point(color = "red") +
+  labs(
+    title = "alcohol consumption in high-income countries in 2014",
+    x = "liters of pure alcohol per capita",
+    y = ""
+  )
+
+
+```
+
 
 ## Final Note
 
