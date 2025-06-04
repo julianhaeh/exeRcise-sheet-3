@@ -270,7 +270,7 @@ d)  Come up with a (research) question you want to answer with the data
     within one sentence. It should be a question that can be answered
     with the dataset and using R.
 
-How has per capita alcohol consumption in Germany evolved from 1890 to 2014 compared to the United-States, Japan, Italy and Australia?
+How has per capita alcohol consumption in Germany evolved from 1890 to 2014 compared to the United-States, Netherlands, Italy and Australia?
 
 It is common knowledge that alcohol consumption is highly unhealthy for us, therefore it is important to reflect on the trend of our consumption. 
     
@@ -278,9 +278,34 @@ e)  Use R to answer your chosen question. Please limit your analysis to
     the functions and techniques we have covered so far in the course.
     You are **not expected** to use advanced statistical models or
     external packages which haven't been introduced.
-    ```{r}
+```{r}
+library(kableExtra)
 alcohol_data <- read.csv("data/Alcohol consumption since 1890 (Alexander & Holmes, 2017).csv")
+    
+countries = c("United States", "Netherlands", "Italy", "Australia", "Germany")    
+    
+summary_data <- alcohol_data %>%
+  filter(Entity %in% countries) %>%
+  group_by(Entity) %>%
+  rename(alcohol_consumption = Alcohol.consumption.since.1890..Alexander...Holmes..2017.) %>%
+  summarise(
+    `value 1890` = alcohol_consumption[which(Year == 1890)],
+    `value 2014` = alcohol_consumption[which(Year == 2014)],
+    `percental change from 1890 to 2014` = ((`value 2014` / `value 1890`) - 1) * 100,
+    `mean rate of change per decade` = (`value 2014` - `value 1890`) / ((2014-1890) / 10),
+    cor = cor(alcohol_consumption, Year),
+    `Year with max` = Year[which.max(alcohol_consumption)],
+    `max value` = max(alcohol_consumption)
+  ) %>%
+  mutate(across(where(is.numeric), ~ round(.x, 3)))
+
+summary_data %>%
+  kable(format = "html", align = "c", caption = "Summary of Alcohol Consumption (1890–2014)") %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed", "responsive"), full_width = FALSE)
 ```
+
+German per capita alcohol consumption changed very little from 1890 to 2014. It reached a higher peak in 1970, after which consumption declined again. The other countries also experienced peaks around the same time, but those peaks were smaller and their subsequent declines were less pronounced. The exception is Italy, which peaked in 1920 and has since reduced its alcohol consumption dramatically. The correlation coefficients indicate that every country except Italy exhibited a general upward trend until its peak; in Italy, a strong downward trend is clearly observable.
+
 f)  Create a meaningful plot / figure with the dataset. Make sure to
     provide a figure caption (via the chunk options / Rmarkdown) and
     correctly label the figure.
